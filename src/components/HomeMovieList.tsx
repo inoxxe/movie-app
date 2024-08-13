@@ -26,22 +26,13 @@ const HomeMovieList = (props: Props) => {
           />
           {props.showRating && (
             <>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  columnGap: 3,
-                  position: 'absolute',
-                  bottom: 10,
-                  left: 10,
-                  zIndex: 10,
-                }}>
+              <View style={styles.ratingContainer}>
                 <Icons.Ionicons
                   name="star"
                   color={COLORS.TITLE_TEXT}
                   size={16}
                 />
-                <Text style={{fontSize: 16, color: COLORS.TITLE_TEXT}}>
+                <Text style={styles.ratingText}>
                   {props.movie.vote_average.toFixed(2)}
                 </Text>
               </View>
@@ -74,4 +65,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
   },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    columnGap: 3,
+    position: 'absolute',
+    bottom: 10,
+    left: 10,
+    zIndex: 10,
+  },
+  ratingText: {fontSize: 16, color: COLORS.TITLE_TEXT},
 });
