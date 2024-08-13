@@ -19,7 +19,7 @@ const fetchPopularMovie = async () => {
     }
     return response.data;
   } catch (error) {
-    throw new Error(error.message || 'Failed to fetch trending movies');
+    throw new Error(error.message || 'Failed to fetch popular movies');
   }
 };
 
@@ -34,6 +34,20 @@ const fetchTrendingMovies = async () => {
     return response.data;
   } catch (error) {
     throw new Error(error.message || 'Failed to fetch trending movies');
+  }
+};
+
+const fetchTopRatedMovies = async () => {
+  try {
+    const response = await api.get('/movie/top_rated');
+    if (!response.ok) {
+      const errorMessage =
+        response.data?.status_message || 'An unknown error occurred';
+      throw new Error(errorMessage);
+    }
+    return response.data;
+  } catch (error) {
+    throw new Error(error.message || 'Failed to fetch top rated movies');
   }
 };
 
@@ -70,6 +84,7 @@ const API = {
   fetchMovieDetails,
   fetchMovieByName,
   fetchPopularMovie,
+  fetchTopRatedMovies,
 };
 
 export default API;

@@ -4,6 +4,7 @@ import {
   Dimensions,
   FlatList,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -22,7 +23,9 @@ const {width} = Dimensions.get('window');
 const HomeScreen = ({navigation}: HomeTabScreenProps<'Home'>) => {
   const [trending, setTrending] = useState<Movie[]>([]);
   const [popular, setPopular] = useState<Movie[]>([]);
+  const [topRated, setTopRated] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isTopRatedLoading, setIsTopRatedLoading] = useState(true);
   const [isBannerLoading, setIsBannerLoading] = useState(true);
 
   const getTrendingMovie = async () => {
@@ -53,14 +56,32 @@ const HomeScreen = ({navigation}: HomeTabScreenProps<'Home'>) => {
     }
   };
 
+  const getTopRatedMovies = async () => {
+    try {
+      const res = (await API.fetchTopRatedMovies()) as MovieResponse;
+      setTopRated(res.results);
+      setIsTopRatedLoading(false);
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert('Error', error.message);
+      } else {
+        Alert.alert('Error', 'An unknown error occurred');
+      }
+    }
+  };
+
   useEffect(() => {
     getTrendingMovie();
     getPopularMovies();
+    getTopRatedMovies();
   }, []);
 
   return (
     <SafeAreaView style={GlobalStyles.container}>
-      <View style={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={styles.container}
+        contentContainerStyle={styles.scrollViewContent}>
         {isBannerLoading ? (
           <ActivityIndicator style={styles.loader} size={'small'} />
         ) : (
@@ -91,28 +112,52 @@ const HomeScreen = ({navigation}: HomeTabScreenProps<'Home'>) => {
             loopClonesPerSide={popular.length}
           />
         )}
-        <Text style={styles.trendingText}>Trending</Text>
-        {isLoading ? (
-          <ActivityIndicator style={styles.loader} size="small" />
-        ) : (
-          <FlatList
-            showsHorizontalScrollIndicator={false}
-            style={styles.flatList}
-            horizontal
-            contentContainerStyle={styles.flatListContent}
-            data={trending}
-            keyExtractor={item => item.id.toString()}
-            renderItem={({item}) => (
-              <HomeMovieList
-                movie={item}
-                onPress={() =>
-                  navigation.navigate('Movie Detail', {movie_id: item.id})
-                }
-              />
-            )}
-          />
-        )}
-      </View>
+        <View style={styles.flatListMovieContainer}>
+          <Text style={styles.sectionText}>Trending</Text>
+          {isLoading ? (
+            <ActivityIndicator style={styles.loader} size="small" />
+          ) : (
+            <FlatList
+              showsHorizontalScrollIndicator={false}
+              style={styles.flatList}
+              horizontal
+              contentContainerStyle={styles.flatListContent}
+              data={trending}
+              keyExtractor={item => item.id.toString()}
+              renderItem={({item}) => (
+                <HomeMovieList
+                  movie={item}
+                  onPress={() =>
+                    navigation.navigate('Movie Detail', {movie_id: item.id})
+                  }
+                />
+              )}
+            />
+          )}
+          <Text style={styles.sectionText}>Top Rated</Text>
+          {isTopRatedLoading ? (
+            <ActivityIndicator style={styles.loader} size="small" />
+          ) : (
+            <FlatList
+              showsHorizontalScrollIndicator={false}
+              style={styles.flatList}
+              horizontal
+              contentContainerStyle={styles.flatListContent}
+              data={topRated}
+              keyExtractor={item => item.id.toString()}
+              renderItem={({item}) => (
+                <HomeMovieList
+                  showRating
+                  movie={item}
+                  onPress={() =>
+                    navigation.navigate('Movie Detail', {movie_id: item.id})
+                  }
+                />
+              )}
+            />
+          )}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -121,9 +166,9 @@ export default HomeScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 16,
   },
+  scrollViewContent: {paddingBottom: 40},
   loader: {
     flex: 1,
   },
@@ -131,16 +176,15 @@ const styles = StyleSheet.create({
     display: 'flex',
     alignItems: 'center',
   },
-  trendingText: {
+  sectionText: {
     color: COLORS.TITLE_TEXT,
     fontSize: 16,
     fontWeight: 'bold',
-    marginTop: -40,
+    marginTop: 0,
   },
-  flatList: {
-    marginTop: 16,
-  },
+  flatList: {rowGap: 16},
   flatListContent: {
     columnGap: 12,
   },
+  flatListMovieContainer: {rowGap: 16},
 });
